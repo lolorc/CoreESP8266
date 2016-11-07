@@ -216,7 +216,6 @@ class ClientContext {
 
             return _pcb->state;
         }
-
 #if 1	//dc42
         size_t write(const char* data, size_t size, bool last = true) {
             if(!_pcb) {
@@ -247,6 +246,13 @@ class ClientContext {
 					tcp_output( _pcb );
 					_send_waiting = true;
 					delay(5000); // max send timeout
+#if 1	//chrishamm
+					if (_size_sent != 0)
+					{
+						// Kill the connection if not all the data could be transferred
+						abort();
+					}
+#endif
 					_send_waiting = false;
 					DEBUGV(":ww\r\n");
 				}
@@ -332,8 +338,12 @@ class ClientContext {
             if(pb == 0) // connection closed
             {
                 DEBUGV(":rcl\r\n");
+#if 1	//chrishamm
+				return close();
+#else
                 abort();
                 return ERR_ABRT;
+#endif
             }
 
             if(_rx_buf) {
